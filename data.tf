@@ -2,9 +2,13 @@ data "aws_iam_account_alias" "current" {
   count       = var.name == null ? 1 : 0
 }
 
+data "external" "install_dependencies" {
+  program = [ "sh", "${path.module}/scripts/install.sh", "${path.module}" ]
+}
+
 # Retrieve the Spot Account ID
 data "external" "account" {
-  depends_on = [null_resource.install_dependencies, null_resource.account]
+  depends_on = [data.external.install_dependencies, null_resource.account]
   program = [
     local.cmd,
     "get",
@@ -14,7 +18,7 @@ data "external" "account" {
 }
 
 data "external" "external_id" {
-  depends_on = [null_resource.install_dependencies, null_resource.account]
+  depends_on = [data.external.install_dependencies, null_resource.account]
   program = [
     local.cmd,
     "create-external-id",
